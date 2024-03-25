@@ -50,3 +50,67 @@ class UserCRUD(ListAPIView):
             # print(e)
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            validate_password(password=data['password'], user=User)
+            data['password'] = make_password(data['password'])
+            user = User.objects.get(**data)
+            serializer = UserSerializer(user, data)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            if 'password' in data.keys():
+                validate_password(password=data['password'], user=User)
+                data['password'] = make_password(data['password'])
+            user = User.objects.get(**data)
+            serializer = UserSerializer(user, data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            # data = request
+            if data == '' or data == {}:
+                raise TypeError("Give the perfect Payload")
+            user = User.objects.get(username=data['username'])
+            serializer = UserSerializer(user, data={"is_active": False}, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render({"Message": str(data['username']) + " Deleted Successfully"}),
+                                    content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserAdditional(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        try:
+            is_active = self.request.GET.get('is_active')
+            user = User.objects.all()
+            print(user)
+            return user
+        except:
+            return User.objects.none()
+
