@@ -16,20 +16,20 @@ from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from user.models import User, UserAddress
-from user.serializers import UserSerializer, UserAddressSerializer
+from user.models import User
+from user.serializers import UserSerializer # , UserAddressSerializer
 
 
-class UserAddressData(ListAPIView):
-    queryset = UserAddress.objects.all()
-    serializer_class = UserAddressSerializer
-
-    def get_queryset(self):
-        try:
-            username = self.request.GET.get("username")
-            return UserAddress.objects.filter(user__username__icontains=username)
-        except Exception as e:
-            return User.objects.none()
+# class UserAddressData(ListAPIView):
+#     queryset = UserAddress.objects.all()
+#     serializer_class = UserAddressSerializer
+#
+#     def get_queryset(self):
+#         try:
+#             username = self.request.GET.get("username")
+#             return UserAddress.objects.filter(user__username__icontains=username)
+#         except Exception as e:
+#             return User.objects.none()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCRUD(ListAPIView):
