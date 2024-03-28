@@ -75,23 +75,10 @@ WSGI_APPLICATION = 'CRM.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': 
-    {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-    #     {
-    #     'ENGINE':'django.db.backends.postgresql_psycopg2',
-    # 'OPTIONS': {
-    #         'options': '-c search_path=django,tdm_db'
-    #     },
-    #     'NAME': 'tdmdb',
-    #     'USER': 'tdm_admin',
-    #     'PASSWORD': 'tdmpfx@123',
-    #     'HOST':  '192.168.15.54',
-    #     'PORT': '5432',
-    # }
-
 }
 
 # Password validation
