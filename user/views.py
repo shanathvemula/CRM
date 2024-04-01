@@ -11,14 +11,17 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.models import User
-from user.serializers import UserSerializer # , UserAddressSerializer
+from user.serializers import UserSerializer  # , UserAddressSerializer
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 # class UserAddressData(ListAPIView):
 #     queryset = UserAddress.objects.all()
@@ -31,19 +34,26 @@ from user.serializers import UserSerializer # , UserAddressSerializer
 #         except Exception as e:
 #             return User.objects.none()
 
+username = openapi.Parameter('username', openapi.IN_QUERY, description="Enter username", type=openapi.TYPE_STRING)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
-class UserCRUD(ListAPIView):
-    queryset = User.objects.all()
+class UserCRUD(APIView):
+    # queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    @swagger_auto_schema(manual_parameters=[username], )
+    def get(self, request):
         try:
-            username = self.request.GET.get("username")
-            return User.objects.get(username=username)
+            user_name = request.query_params.get("username")
+            user = User.objects.get(username=user_name)
+            serializer = UserSerializer(user)
+            return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
         except Exception as e:
-            return User.objects.none()
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -108,18 +118,26 @@ class UserCRUD(ListAPIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserAdditional(ListAPIView):
-    queryset = User.objects.all()
+is_active = openapi.Parameter('is_active', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN)
+
+
+class UserAdditional(APIView):
+    # queryset = User.objects.all()
     serializer_class = UserSerializer
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    @swagger_auto_schema(manual_parameters=[is_active])
+    def get(self, request):
         try:
-            is_active = self.request.GET.get('is_active')
-            user = User.objects.all()
-            print(user)
-            return user
-        except:
-            return User.objects.none()
+            is_active = request.query_params.get("is_active")
+            if is_active == "true":
+                user = User.objects.filter(is_active=True)
+            else:
+                user = User.objects.filter(is_active=False)
 
+            serializer = UserSerializer(user, many=True)
+            return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
