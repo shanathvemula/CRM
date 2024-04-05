@@ -1,3 +1,4 @@
+from django.db.models.fields.json import KT
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -7,6 +8,7 @@ from django.http import HttpResponse, JsonResponse
 # Password Hashing and Validating Password
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Sum
 
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
@@ -135,9 +137,11 @@ class UserAdditional(APIView):
                 user = User.objects.filter(is_active=True)
             else:
                 user = User.objects.filter(is_active=False)
-
+            # print(User.objects.annotate(Address=KT('Address')).aggregate(is_active=Sum('is_active')))
+            # user = User.objects.filter(Address__is_active__exact=2)
             serializer = UserSerializer(user, many=True)
             return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
         except Exception as e:
+            raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

@@ -10,6 +10,7 @@ import time
 from datetime import datetime
 
 from user.utils import COUNTRIES
+from django.contrib.auth.models import AbstractUser
 
 
 # Create your models here.
@@ -20,6 +21,9 @@ def generate_unique_key():
 def img_url(self, filename):
     hash_ = int(time.time())
     return "%s/%s/%s" % ("profile_pics", hash_, filename)
+
+
+User.add_to_class("Address", models.JSONField(default={}, blank=True, null=True))
 
 
 # class User(AbstractBaseUser, PermissionsMixin):

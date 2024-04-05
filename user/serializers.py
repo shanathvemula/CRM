@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from user.models import User #, UserAddress , Tasks
+from user.models import User  # , UserAddress , Tasks
 
 
 class UserSerializer(ModelSerializer):
